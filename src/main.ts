@@ -9,9 +9,11 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
+  app.setGlobalPrefix('api');
+
   const config = new DocumentBuilder()
-    .setTitle('DesktopIP Test - Medical App')
-    .setDescription('DesktopIP Test - Medical App')
+    .setTitle('DesktopIP Test - Medical App API')
+    .setDescription('Backend built using NestJs + PostgreSql + Prisma')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
