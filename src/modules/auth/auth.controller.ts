@@ -14,7 +14,7 @@ export class AuthController {
   @Post('register')
   @ApiCreatedResponse({ type: UserEntity })
   async register(@Body() createUserDto: CreateUserDto) {
-    return new UserEntity(await this.authService.register(createUserDto));
+    return await this.authService.register(createUserDto);
   }
 
   @Post('login')

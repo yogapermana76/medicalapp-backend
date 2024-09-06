@@ -5,10 +5,10 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from './../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthEntity } from './entities/auth.entity';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { roundsOfHashing } from '../users/users.service';
+import { SuccessResponse } from 'src/helpers/response.helper';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +18,14 @@ export class AuthService {
   ) {}
 
   async register(createUserDto: CreateUserDto) {
+    const { email } = createUserDto;
+
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (user) {
+      throw new UnauthorizedException('User already exists');
+    }
+
     const hashedPassword = await bcrypt.hash(
       createUserDto.password,
       roundsOfHashing,
@@ -25,10 +33,14 @@ export class AuthService {
 
     createUserDto.password = hashedPassword;
 
-    return this.prisma.user.create({ data: createUserDto });
+    const data = await this.prisma.user.create({ data: createUserDto });
+
+    delete data.password;
+
+    return new SuccessResponse(data);
   }
 
-  async login(email: string, password: string): Promise<AuthEntity> {
+  async login(email: string, password: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (!user) {
@@ -41,8 +53,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid password');
     }
 
-    return {
-      accessToken: this.jwtService.sign({ userId: user.id }),
+    delete user.password;
+
+    const data = {
+      user,
+      access_token: this.jwtService.sign({ userId: user.id }),
     };
+
+    return new SuccessResponse(data);
   }
 }
