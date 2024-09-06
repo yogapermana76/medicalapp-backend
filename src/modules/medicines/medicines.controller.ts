@@ -21,13 +21,13 @@ import {
 import { MedicineEntity } from './entities/medicine.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
 @Controller('medicines')
 @ApiTags('medicines')
 export class MedicinesController {
   constructor(private readonly medicinesService: MedicinesService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: MedicineEntity })
   create(@Body() createMedicineDto: CreateMedicineDto) {
@@ -35,7 +35,6 @@ export class MedicinesController {
   }
 
   @Get()
-  @ApiBearerAuth()
   @ApiOkResponse({ type: MedicineEntity, isArray: true })
   findAll() {
     return this.medicinesService.findAll();
@@ -49,6 +48,7 @@ export class MedicinesController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   update(
     @Param('id', ParseIntPipe) id: number,
@@ -58,6 +58,7 @@ export class MedicinesController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOkResponse({ type: MedicineEntity })
   remove(@Param('id', ParseIntPipe) id: number) {
