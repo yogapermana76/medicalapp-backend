@@ -22,8 +22,13 @@ export class ChatService {
       throw new Error('User not found');
     }
 
+    const user = await this.prisma.user.findUnique({
+      where: { id: +doctor_id },
+      include: { doctor: true },
+    });
+
     const doctor = await this.prisma.doctor.findUnique({
-      where: { user_id: doctor_id },
+      where: { id: user.doctor.id },
     });
 
     if (!doctor) {
@@ -35,10 +40,10 @@ export class ChatService {
         OR: [
           {
             user_id,
-            doctor_id,
+            doctor_id: doctor.id,
           },
           {
-            user_id: doctor_id,
+            user_id: doctor.id,
             doctor_id: user_id,
           },
         ],
@@ -46,13 +51,13 @@ export class ChatService {
     });
 
     if (isChatExists) {
-      throw new Error('Chat already exists');
+      return isChatExists;
     }
 
     return await this.prisma.chat.create({
       data: {
         user_id,
-        doctor_id,
+        doctor_id: doctor.id,
       },
     });
   }
