@@ -74,15 +74,32 @@ export class OrdersService {
   }
 
   async findOne(id: number) {
-    return this.prisma.order.findUnique({
+    if (isNaN(id)) {
+      throw new BadRequestException('Order ID must be a number.');
+    }
+
+    const order = await this.prisma.order.findUnique({
       where: { id },
       include: { order_items: true },
     });
+
+    if (!order) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    return order;
   }
 
   async update(id: number, updateOrderDto: UpdateOrderDto) {
     const { order_items, ...orderData } = updateOrderDto;
-    return this.prisma.order.update({
+
+    const isFound = await this.prisma.order.findUnique({ where: { id } });
+
+    if (!isFound) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    return await this.prisma.order.update({
       where: { id },
       data: {
         ...orderData,
@@ -96,8 +113,16 @@ export class OrdersService {
   }
 
   async remove(id: number) {
-    return this.prisma.order.delete({
-      where: { id },
-    });
+    if (isNaN(id)) {
+      throw new BadRequestException('Order ID must be a number.');
+    }
+
+    const isFound = await this.prisma.order.findUnique({ where: { id } });
+
+    if (!isFound) {
+      throw new NotFoundException('Order not found.');
+    }
+
+    return await this.prisma.order.delete({ where: { id } });
   }
 }
