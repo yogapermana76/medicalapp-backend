@@ -9,15 +9,35 @@ export const roundsOfHashing = 10;
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.prisma.user.findMany();
+  async findAll() {
+    return await this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({ where: { id } });
+  async findOne(id: number) {
+    if (isNaN(id)) {
+      throw new Error('id must be a number');
+    }
+
+    const data = this.prisma.user.findUnique({ where: { id } });
+
+    if (!data) {
+      throw new Error('user not found');
+    }
+
+    return data;
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
+    if (isNaN(id)) {
+      throw new Error('id must be a number');
+    }
+
+    const isFound = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!isFound) {
+      throw new Error('user not found');
+    }
+
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(
         updateUserDto.password,
@@ -25,10 +45,23 @@ export class UsersService {
       );
     }
 
-    return this.prisma.user.update({ where: { id }, data: updateUserDto });
+    return this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
   }
 
-  remove(id: number) {
-    return this.prisma.user.delete({ where: { id } });
+  async remove(id: number) {
+    if (isNaN(id)) {
+      throw new Error('id must be a number');
+    }
+
+    const isFound = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!isFound) {
+      throw new Error('user not found');
+    }
+
+    return await this.prisma.user.delete({ where: { id } });
   }
 }
