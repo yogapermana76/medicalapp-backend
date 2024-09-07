@@ -95,11 +95,27 @@ export class ChatService {
     if (doctor) {
       return this.prisma.chat.findMany({
         where: { doctor_id: doctor.id },
+        include: {
+          messages: {
+            take: 1,
+            orderBy: {
+              sent_at: 'desc',
+            },
+          },
+        },
       });
     }
 
     return this.prisma.chat.findMany({
       where: { user_id: +user_id },
+      include: {
+        messages: {
+          take: 1,
+          orderBy: {
+            sent_at: 'desc',
+          },
+        },
+      },
     });
   }
 }
