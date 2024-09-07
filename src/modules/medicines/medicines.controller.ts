@@ -47,9 +47,9 @@ export class MedicinesController {
 
   @Get()
   @ApiOkResponse({ type: MedicineEntity, isArray: true })
-  findAll() {
+  async findAll() {
     try {
-      const data = this.medicinesService.findAll();
+      const data = await this.medicinesService.findAll();
       return this.responseService.success(
         'success get medicine data list',
         data,
