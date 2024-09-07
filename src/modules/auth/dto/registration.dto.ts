@@ -10,22 +10,32 @@ export class DoctorDto {
 export class RegistrationDto {
   @IsNotEmpty()
   @IsString()
-  @ApiProperty()
+  @ApiProperty({ example: 'John Doe', description: 'The name of the user' })
   name: string;
 
   @IsEmail()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    example: 'john.doe@example.com',
+    description: 'The email address of the user',
+  })
   email: string;
 
   @IsNotEmpty()
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    example: 'hashedpassword123',
+    description: 'The password of the user',
+  })
   password: string;
 
   @IsNotEmpty()
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    example: 'patient',
+    enum: ['patient', 'doctor'],
+    description: 'The role of the user',
+  })
   role: 'patient' | 'doctor';
 
   // If the role is 'doctor', doctorDto must be filled
