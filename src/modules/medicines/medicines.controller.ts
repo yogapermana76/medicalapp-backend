@@ -20,24 +20,43 @@ import {
 } from '@nestjs/swagger';
 import { MedicineEntity } from './entities/medicine.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Response, ResponseStatusCode } from 'src/decorators';
+import { ResponseService } from '../response/response.service';
 
 @Controller('medicines')
 @ApiTags('medicines')
 export class MedicinesController {
-  constructor(private readonly medicinesService: MedicinesService) {}
+  constructor(
+    @Response() private readonly responseService: ResponseService,
+    private readonly medicinesService: MedicinesService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiCreatedResponse({ type: MedicineEntity })
-  create(@Body() createMedicineDto: CreateMedicineDto) {
-    return this.medicinesService.create(createMedicineDto);
+  @ResponseStatusCode()
+  async create(@Body() createMedicineDto: CreateMedicineDto) {
+    try {
+      const data = await this.medicinesService.create(createMedicineDto);
+      return this.responseService.success('success created', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Get()
   @ApiOkResponse({ type: MedicineEntity, isArray: true })
   findAll() {
-    return this.medicinesService.findAll();
+    try {
+      const data = this.medicinesService.findAll();
+      return this.responseService.success(
+        'success get medicine data list',
+        data,
+      );
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Get(':id')

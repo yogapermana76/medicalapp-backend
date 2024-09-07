@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateMedicineDto } from './dto/create-medicine.dto';
 import { UpdateMedicineDto } from './dto/update-medicine.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { SuccessResponse } from 'src/helpers/response.helper';
 
 @Injectable()
 export class MedicinesService {
@@ -13,9 +12,7 @@ export class MedicinesService {
   }
 
   async findAll() {
-    const data = await this.prisma.medicine.findMany();
-
-    return new SuccessResponse(data);
+    return await this.prisma.medicine.findMany();
   }
 
   findOne(id: number) {
