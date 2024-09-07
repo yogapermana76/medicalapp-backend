@@ -4,9 +4,9 @@ import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthEntity } from './entities/auth.entity';
 import { LoginDto } from './dto/login.dto';
 import { UserEntity } from '../users/entities/user.entity';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { ResponseService } from '../response/response.service';
 import { Response, ResponseStatusCode } from 'src/decorators';
+import { RegistrationDto } from './dto/registration.dto';
 
 @Controller('/')
 @ApiTags('auth')
@@ -19,9 +19,9 @@ export class AuthController {
 
   @Post('register')
   @ApiCreatedResponse({ type: UserEntity })
-  async register(@Body() createUserDto: CreateUserDto) {
+  async register(@Body() registrationDto: RegistrationDto) {
     try {
-      const data = await this.authService.register(createUserDto);
+      const data = await this.authService.register(registrationDto);
       return this.responseService.success('success register', data);
     } catch (error) {
       return this.responseService.error(error);

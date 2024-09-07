@@ -6,8 +6,8 @@ import {
 import { PrismaService } from './../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from '../users/dto/create-user.dto';
 import { roundsOfHashing } from '../users/users.service';
+import { RegistrationDto } from './dto/registration.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,27 +16,59 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async register(createUserDto: CreateUserDto) {
-    const { email } = createUserDto;
+  async register(registrationDto: RegistrationDto) {
+    const { email, role } = registrationDto;
 
+    // Check if user already exists
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (user) {
       throw new UnauthorizedException('User already exists');
     }
 
+    // Hash the password
     const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
+      registrationDto.password,
       roundsOfHashing,
     );
 
-    createUserDto.password = hashedPassword;
+    registrationDto.password = hashedPassword;
 
-    const data = await this.prisma.user.create({ data: createUserDto });
+    // Create the user
+    const userData = await this.prisma.user.create({
+      data: {
+        name: registrationDto.name,
+        email: registrationDto.email,
+        password: registrationDto.password,
+        role: registrationDto.role,
+      },
+      include: {
+        doctor: true,
+      },
+    });
 
-    delete data.password;
+    // Create a Doctor record if the role is 'doctor'
+    if (role === 'doctor') {
+      const { specialization } = registrationDto;
 
-    return data;
+      if (!specialization) {
+        throw new UnauthorizedException(
+          'Specialization is required for doctor',
+        );
+      }
+
+      await this.prisma.doctor.create({
+        data: {
+          user_id: userData.id,
+          specialization: specialization || null, // Handle specialization as null if not provided
+        },
+      });
+    }
+
+    // Clean up password from the response data
+    delete userData.password;
+
+    return userData;
   }
 
   async login(email: string, password: string) {
