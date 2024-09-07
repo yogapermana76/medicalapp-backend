@@ -30,9 +30,9 @@ export class AuthController {
 
   @Post('login')
   @ApiOkResponse({ type: AuthEntity })
-  login(@Body() { email, password }: LoginDto) {
+  async login(@Body() { email, password }: LoginDto) {
     try {
-      const data = this.authService.login(email, password);
+      const data = await this.authService.login(email, password);
       return this.responseService.success('success login', data);
     } catch (error) {
       return this.responseService.error(error);
