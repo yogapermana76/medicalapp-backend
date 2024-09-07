@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -11,19 +15,55 @@ export class OrdersService {
   async create(createOrderDto: CreateOrderDto, user: IUserData) {
     const { order_items, ...orderData } = createOrderDto;
 
-    const order = await this.prisma.order.create({
-      data: {
-        ...orderData,
-        status: 'pending',
-        user_id: user.id,
-        order_items: {
-          create: order_items,
-        },
-      },
-      include: { order_items: true },
-    });
+    try {
+      // Start a transaction
+      const order = await this.prisma.$transaction(async (prisma) => {
+        // Check and update stock
+        await Promise.all(
+          order_items.map(async (item) => {
+            const medicine = await prisma.medicine.findUnique({
+              where: { id: item.medicine_id },
+            });
 
-    return order;
+            if (!medicine) {
+              throw new NotFoundException(
+                `Medicine with ID ${item.medicine_id} not found.`,
+              );
+            }
+
+            if (medicine.stock < item.quantity) {
+              throw new BadRequestException(
+                `Insufficient stock for medicine with ID ${item.medicine_id}.`,
+              );
+            }
+
+            // Update the stock
+            await prisma.medicine.update({
+              where: { id: item.medicine_id },
+              data: { stock: medicine.stock - item.quantity },
+            });
+          }),
+        );
+
+        // Create the order
+        return prisma.order.create({
+          data: {
+            ...orderData,
+            status: 'pending',
+            user_id: user.id,
+            order_items: {
+              create: order_items,
+            },
+          },
+          include: { order_items: true },
+        });
+      });
+
+      return order;
+    } catch (error) {
+      // Handle error and rollback
+      throw error;
+    }
   }
 
   async findAll(user: IUserData) {
