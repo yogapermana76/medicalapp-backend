@@ -1,21 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber } from 'class-validator';
 import { CreateOrderItemDto } from './create-order-item.dto';
+import { Type } from 'class-transformer';
 
 export class CreateOrderDto {
-  @IsNumber()
-  @IsNotEmpty()
-  user_id: number;
-
   @IsNumber()
   @IsNotEmpty()
   @ApiProperty()
   total_amount: number;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  status: string;
-
+  @IsArray()
+  @ApiProperty({ type: [CreateOrderItemDto] })
+  @Type(() => CreateOrderItemDto)
   order_items: CreateOrderItemDto[];
 }

@@ -7,17 +7,21 @@ import { PrismaService } from '../prisma/prisma.service';
 export class OrdersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createOrderDto: CreateOrderDto, userId: number) {
     const { order_items, ...orderData } = createOrderDto;
+
     const order = await this.prisma.order.create({
       data: {
         ...orderData,
+        status: 'pending',
+        user_id: userId,
         order_items: {
           create: order_items,
         },
       },
       include: { order_items: true },
     });
+
     return order;
   }
 

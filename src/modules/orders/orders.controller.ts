@@ -11,23 +11,44 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from 'src/decorators';
+import { Response, ResponseStatusCode } from 'src/decorators';
+import { ResponseService } from '../response/response.service';
 
-@UseGuards(JwtAuthGuard)
 @Controller('orders')
 @ApiTags('orders')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ResponseStatusCode()
 export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+  constructor(
+    @Response() private readonly responseService: ResponseService,
+    private readonly ordersService: OrdersService,
+  ) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  async create(
+    @Body() createOrderDto: CreateOrderDto,
+    @User() user: { id: number },
+  ) {
+    try {
+      const data = await this.ordersService.create(createOrderDto, user.id);
+      return this.responseService.success('success created', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Get()
   findAll() {
-    return this.ordersService.findAll();
+    try {
+      const data = this.ordersService.findAll();
+      return this.responseService.success('success get order data list', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Get(':id')
