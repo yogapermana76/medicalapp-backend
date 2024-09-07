@@ -28,7 +28,7 @@ model User {
 model Doctor {
   id             Int    @id @default(autoincrement())
   user_id         Int    @unique
-  specialization String
+  specialization String?
   user           User   @relation(fields: [user_id], references: [id], name: "UserDoctor")
   chats          Chat[]
 }
