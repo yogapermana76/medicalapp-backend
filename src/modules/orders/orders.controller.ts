@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { User } from 'src/decorators';
 import { Response, ResponseStatusCode } from 'src/decorators';
 import { ResponseService } from '../response/response.service';
+import { IUserData } from '../auth/interfaces';
 
 @Controller('orders')
 @ApiTags('orders')
@@ -31,10 +32,10 @@ export class OrdersController {
   @Post()
   async create(
     @Body() createOrderDto: CreateOrderDto,
-    @User() user: { id: number },
+    @User() user: IUserData,
   ) {
     try {
-      const data = await this.ordersService.create(createOrderDto, user.id);
+      const data = await this.ordersService.create(createOrderDto, user);
       return this.responseService.success('success created', data);
     } catch (error) {
       return this.responseService.error(error);
@@ -42,9 +43,9 @@ export class OrdersController {
   }
 
   @Get()
-  findAll() {
+  async findAll(@User() user: IUserData) {
     try {
-      const data = this.ordersService.findAll();
+      const data = await this.ordersService.findAll(user);
       return this.responseService.success('success get order data list', data);
     } catch (error) {
       return this.responseService.error(error);
