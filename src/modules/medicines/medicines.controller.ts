@@ -62,18 +62,28 @@ export class MedicinesController {
   @Get(':id')
   @ApiBearerAuth()
   @ApiOkResponse({ type: MedicineEntity })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.medicinesService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const data = await this.medicinesService.findOne(id);
+      return this.responseService.success('success get medicine data', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateMedicineDto: UpdateMedicineDto,
   ) {
-    return this.medicinesService.update(id, updateMedicineDto);
+    try {
+      const data = await this.medicinesService.update(id, updateMedicineDto);
+      return this.responseService.success('success updated', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Delete(':id')
@@ -81,6 +91,11 @@ export class MedicinesController {
   @ApiBearerAuth()
   @ApiOkResponse({ type: MedicineEntity })
   remove(@Param('id', ParseIntPipe) id: number) {
-    return this.medicinesService.remove(id);
+    try {
+      const data = this.medicinesService.remove(id);
+      return this.responseService.success('success deleted', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 }

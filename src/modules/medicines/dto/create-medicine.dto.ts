@@ -4,21 +4,30 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 export class CreateMedicineDto {
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    example: 'Paracetamol',
+    description: 'The name of the medicine',
+  })
   name: string;
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    example: 'Pain reliever and fever reducer',
+    description: 'Description of the medicine',
+  })
   description: string;
 
   @IsNumber()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ example: 5000, description: 'The price of the medicine' })
   price: number;
 
   @IsNumber()
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({
+    example: 100,
+    description: 'The available stock of the medicine',
+  })
   stock: number;
 }

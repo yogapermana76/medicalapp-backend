@@ -15,18 +15,52 @@ export class MedicinesService {
     return await this.prisma.medicine.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.medicine.findUnique({ where: { id } });
+  async findOne(id: number) {
+    if (isNaN(id)) {
+      throw new Error('id must be a number');
+    }
+
+    const data = await this.prisma.medicine.findUnique({ where: { id } });
+
+    if (!data) {
+      throw new Error('medicine not found');
+    }
+
+    return data;
   }
 
-  update(id: number, updateMedicineDto: UpdateMedicineDto) {
-    return this.prisma.medicine.update({
+  async update(id: number, updateMedicineDto: UpdateMedicineDto) {
+    if (isNaN(id)) {
+      throw new Error('id must be a number');
+    }
+
+    const isFound = await this.prisma.medicine.findUnique({ where: { id } });
+
+    if (!isFound) {
+      throw new Error('medicine not found');
+    }
+
+    const data = await this.prisma.medicine.update({
       where: { id },
       data: updateMedicineDto,
     });
+
+    return data;
   }
 
-  remove(id: number) {
-    return this.prisma.medicine.delete({ where: { id } });
+  async remove(id: number) {
+    if (isNaN(id)) {
+      throw new Error('id must be a number');
+    }
+
+    const isFound = await this.prisma.medicine.findUnique({ where: { id } });
+
+    if (!isFound) {
+      throw new Error('medicine not found');
+    }
+
+    const data = await this.prisma.medicine.delete({ where: { id } });
+
+    return data;
   }
 }
