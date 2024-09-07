@@ -88,8 +88,18 @@ export class ChatService {
   }
 
   async findAllChatsByUser(user_id: number) {
+    const doctor = await this.prisma.doctor.findUnique({
+      where: { user_id: +user_id },
+    });
+
+    if (doctor) {
+      return this.prisma.chat.findMany({
+        where: { doctor_id: doctor.id },
+      });
+    }
+
     return this.prisma.chat.findMany({
-      where: { user_id },
+      where: { user_id: +user_id },
     });
   }
 }

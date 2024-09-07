@@ -2,12 +2,11 @@ import { Post, Body, Get, Param, Controller, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { Response, ResponseStatusCode, User } from 'src/decorators';
+import { Response, ResponseStatusCode } from 'src/decorators';
 import { ResponseService } from '../response/response.service';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { ChatEntity } from './entities/chat.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { IUserData } from '../auth/interfaces';
 
 @Controller('/')
 @ApiTags('chat')
@@ -31,10 +30,10 @@ export class ChatController {
     }
   }
 
-  @Get('/chats')
-  async findAllChatsByUser(@User() user: IUserData) {
+  @Get('/chats/:userId')
+  async findAllChatsByUser(@Param('userId') userId: number) {
     try {
-      const data = await this.chatService.findAllChatsByUser(user.id);
+      const data = await this.chatService.findAllChatsByUser(userId);
       return this.responseService.success('success get chats', data);
     } catch (error) {
       return this.responseService.error(error);
