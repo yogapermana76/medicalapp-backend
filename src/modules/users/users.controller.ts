@@ -49,7 +49,7 @@ export class UsersController {
   @ApiOkResponse({ type: UserEntity })
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
-      const data = this.usersService.findOne(id);
+      const data = await this.usersService.findOne(id);
       return this.responseService.success('success get user data', data);
     } catch (error) {
       return this.responseService.error(error);

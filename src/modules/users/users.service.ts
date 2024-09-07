@@ -18,7 +18,10 @@ export class UsersService {
       throw new Error('id must be a number');
     }
 
-    const data = this.prisma.user.findUnique({ where: { id } });
+    const data = await this.prisma.user.findUnique({
+      where: { id },
+      include: { doctor: true },
+    });
 
     if (!data) {
       throw new Error('user not found');
