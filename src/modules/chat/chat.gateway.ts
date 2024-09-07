@@ -1,28 +1,29 @@
 import {
   WebSocketGateway,
-  WebSocketServer,
+  SubscribeMessage,
+  MessageBody,
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  SubscribeMessage,
-  MessageBody,
   ConnectedSocket,
 } from '@nestjs/websockets';
+import { Inject } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
-@WebSocketGateway({ cors: true })
+// @WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: { origin: '*' } })
 export class ChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  @WebSocketServer() server: Server;
+  @Inject(ChatService)
+  private readonly chatService: ChatService;
 
-  constructor(private readonly chatService: ChatService) {}
+  private server: Server;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   afterInit(server: Server) {
-    console.log('WebSocket server initialized');
+    this.server = server;
   }
 
   handleConnection(client: Socket) {
@@ -33,34 +34,20 @@ export class ChatGateway
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('sendMessage')
-  async handleMessage(
-    @MessageBody() createMessageDto: CreateMessageDto,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    @ConnectedSocket() client: Socket,
-  ) {
+  @SubscribeMessage('send_message')
+  async handleMessage(@MessageBody() createMessageDto: CreateMessageDto) {
+    const chatId = createMessageDto.chat_id;
     const message = await this.chatService.createMessage(createMessageDto);
-    this.server
-      .to(`chat_${createMessageDto.chat_id}`)
-      .emit('messageReceived', message);
-    return message;
+
+    // Emit the message to both users in the chat
+    this.server.to(`chat_${chatId}`).emit('message', message);
   }
 
-  @SubscribeMessage('joinChat')
-  handleJoinChat(
-    @MessageBody('chat_id') chat_id: number,
+  @SubscribeMessage('join_chat')
+  async handleJoinChat(
+    @MessageBody('chatId') chatId: number,
     @ConnectedSocket() client: Socket,
   ) {
-    client.join(`chat_${chat_id}`);
-    console.log(`Client ${client.id} joined chat_${chat_id}`);
-  }
-
-  @SubscribeMessage('leaveChat')
-  handleLeaveChat(
-    @MessageBody('chat_id') chat_id: number,
-    @ConnectedSocket() client: Socket,
-  ) {
-    client.leave(`chat_${chat_id}`);
-    console.log(`Client ${client.id} left chat_${chat_id}`);
+    client.join(`chat_${chatId}`);
   }
 }
