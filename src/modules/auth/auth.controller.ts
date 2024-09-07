@@ -5,21 +5,37 @@ import { AuthEntity } from './entities/auth.entity';
 import { LoginDto } from './dto/login.dto';
 import { UserEntity } from '../users/entities/user.entity';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { ResponseService } from '../response/response.service';
+import { Response, ResponseStatusCode } from 'src/decorators';
 
 @Controller('/')
 @ApiTags('auth')
+@ResponseStatusCode()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    @Response() private readonly responseService: ResponseService,
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('register')
   @ApiCreatedResponse({ type: UserEntity })
   async register(@Body() createUserDto: CreateUserDto) {
-    return await this.authService.register(createUserDto);
+    try {
+      const data = await this.authService.register(createUserDto);
+      return this.responseService.success('success register', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 
   @Post('login')
   @ApiOkResponse({ type: AuthEntity })
   login(@Body() { email, password }: LoginDto) {
-    return this.authService.login(email, password);
+    try {
+      const data = this.authService.login(email, password);
+      return this.responseService.success('success login', data);
+    } catch (error) {
+      return this.responseService.error(error);
+    }
   }
 }

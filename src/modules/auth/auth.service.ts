@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { roundsOfHashing } from '../users/users.service';
-import { SuccessResponse } from 'src/helpers/response.helper';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +36,7 @@ export class AuthService {
 
     delete data.password;
 
-    return new SuccessResponse(data);
+    return data;
   }
 
   async login(email: string, password: string) {
@@ -60,6 +59,6 @@ export class AuthService {
       access_token: this.jwtService.sign({ userId: user.id }),
     };
 
-    return new SuccessResponse(data);
+    return data;
   }
 }
