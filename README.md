@@ -90,3 +90,7 @@ yarn # or yarn install
 | NestJS  | Base framework                         | [docs.nestjs.com](https://docs.nestjs.com)                              |
 | Prisma  | ORM for manage the PostgreSQL database | [prisma.io](https://www.prisma.io)                                      |
 | Swagger | API documentation                      | [docs.nestjs.com/openapi](https://docs.nestjs.com/openapi/introduction) |
+
+## API Documentation
+
+To access the API documentation, start the application first, then open your browser and navigate to BASE_URL/swagger.
