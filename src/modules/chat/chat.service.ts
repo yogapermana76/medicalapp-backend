@@ -102,6 +102,20 @@ export class ChatService {
               sent_at: 'desc',
             },
           },
+          user: {
+            select: {
+              name: true,
+            },
+          },
+          doctor: {
+            select: {
+              user: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
         },
       });
     }
@@ -113,6 +127,20 @@ export class ChatService {
           take: 1,
           orderBy: {
             sent_at: 'desc',
+          },
+        },
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        doctor: {
+          select: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
