@@ -48,6 +48,22 @@ export class ChatService {
           },
         ],
       },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        doctor: {
+          select: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (isChatExists) {
@@ -58,6 +74,22 @@ export class ChatService {
       data: {
         user_id,
         doctor_id: doctor.id,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        doctor: {
+          select: {
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
   }
